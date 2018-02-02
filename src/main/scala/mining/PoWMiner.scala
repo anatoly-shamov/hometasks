@@ -3,12 +3,23 @@ package mining
 import scorex.crypto.hash.CryptographicHash32
 
 import scala.math.BigInt
+import java.security.SecureRandom
 
 class PoWMiner[HF <: CryptographicHash32](hashFunction: HF) {
 
   private val MaxTarget: BigInt = BigInt(1, Array.fill(32)((-1).toByte))
 
-  def doWork(data: Array[Byte], difficulty: BigInt): ProvedData = ???
+  def doWork(data: Array[Byte], difficulty: BigInt): ProvedData = {
+    val seed: Array[Byte] = SecureRandom.getInstanceStrong.generateSeed(32)
+
+    def loop(hash: Array[Byte]): Array[Byte] = {
+      val newHash = hashFunction.hash(hash ++ data)
+      if (MaxTarget / BigInt(1, newHash) <= difficulty) hash
+      else loop(newHash)
+    }
+
+    ProvedData(data, java.nio.ByteBuffer.wrap(loop(seed)).getInt)
+  }
 
   def validateWork(data: ProvedData, difficulty: BigInt): Boolean = realDifficulty(data) <= difficulty
 
