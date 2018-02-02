@@ -14,6 +14,7 @@ class PoWMinerTest extends PropSpec
   property("should generate valid prof for S") {
     val miner = new PoWMiner(Blake2b256)
     forAll(smallInt, nonEmptyBytesGen) { (difficulty, data) =>
+      println(s"$difficulty, (${data.mkString(", ")})")
       val proved = miner.doWork(data, difficulty)
       proved.data shouldEqual data
       miner.validateWork(proved, difficulty) shouldBe true
