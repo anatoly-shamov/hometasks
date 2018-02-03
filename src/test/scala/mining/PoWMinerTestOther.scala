@@ -5,7 +5,7 @@ import org.scalatest.{Matchers, PropSpec}
 import scorex.crypto.hash.Blake2b256
 import scorex.testkit.generators.CoreGenerators
 
-class PoWMinerTestPar extends PropSpec
+class PoWMinerTestOther extends PropSpec
   with PropertyChecks
   with GeneratorDrivenPropertyChecks
   with Matchers
@@ -20,4 +20,14 @@ class PoWMinerTestPar extends PropSpec
       miner.validateWork(proved, difficulty) shouldBe true
     }
   }
+
+  property("should generate valid proofs with case class") {
+    val miner = new PoWMiner(Blake2b256)
+    forAll(smallInt, nonEmptyBytesGen) { (difficulty, data) =>
+      val proved = miner.doWorkCase(data, difficulty)
+      proved.data shouldEqual data
+      miner.validateWork(proved, difficulty) shouldBe true
+    }
+  }
+
 }

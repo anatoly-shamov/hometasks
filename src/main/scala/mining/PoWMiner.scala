@@ -10,6 +10,7 @@ import com.google.common.primitives.Ints
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Random
 
 class PoWMiner[HF <: CryptographicHash32](hashFunction: HF) {
 
@@ -22,6 +23,16 @@ class PoWMiner[HF <: CryptographicHash32](hashFunction: HF) {
       else loop(getRandomBytes)
     }
     ProvedData(data, Ints.fromByteArray(loop(getRandomBytes)))
+  }
+
+  def doWorkCase(data: Array[Byte], difficulty: BigInt): ProvedData = {
+    def loop(nonce: Int): Int = {
+      if (validateWork(ProvedData(data, nonce), difficulty))
+        nonce
+      else
+        loop(Random.nextInt())
+    }
+    ProvedData(data, loop(Random.nextInt()))
   }
 
   def doWorkPar(data: Array[Byte], difficulty: BigInt, parallelismLevel: Int): ProvedData = {
