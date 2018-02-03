@@ -22,9 +22,13 @@ libraryDependencies ++= Seq(
   "org.scorexfoundation" %% "scorex-testkit" % scorexVersion % "test",
   "org.scalactic" %% "scalactic" % "3.0.+" % "test",
   "org.scalatest" %% "scalatest" % "3.0.+" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.+" % "test"
+  "org.scalacheck" %% "scalacheck" % "1.13.+" % "test",
+  "com.storm-enroute" %% "scalameter" % "0.7" % "test"
 )
 
+testFrameworks += new TestFramework(
+  "org.scalameter.ScalaMeterFramework")
+logBuffered := false
 
 fork := true
 

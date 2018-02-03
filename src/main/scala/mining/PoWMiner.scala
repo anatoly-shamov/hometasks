@@ -3,24 +3,32 @@ package mining
 import scorex.crypto.hash.CryptographicHash32
 
 import scala.math.BigInt
-import java.security.SecureRandom
+import java.security.SecureRandom.getInstanceStrong
 
 import com.google.common.primitives.Ints
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PoWMiner[HF <: CryptographicHash32](hashFunction: HF) {
 
   private val MaxTarget: BigInt = BigInt(1, Array.fill(32)((-1).toByte))
 
   def doWork(data: Array[Byte], difficulty: BigInt): ProvedData = {
-    val seed: Array[Byte] = SecureRandom.getInstanceStrong.generateSeed(32)
-
+    def getRandomBytes = Ints.toByteArray(getInstanceStrong.nextInt())
     def loop(hash: Array[Byte]): Array[Byte] = {
-      val newHash = hashFunction.hash(hash ++ data)
-      if (MaxTarget / BigInt(1, newHash) >= difficulty) hash
-      else loop(newHash)
+      if (MaxTarget / BigInt(1, hashFunction.hash(hash ++ data)) >= difficulty) hash
+      else loop(getRandomBytes)
     }
+    ProvedData(data, Ints.fromByteArray(loop(getRandomBytes)))
+  }
 
-    ProvedData(data, Ints.fromByteArray(loop(seed)))
+  def doWorkPar(data: Array[Byte], difficulty: BigInt, parallelismLevel: Int): ProvedData = {
+    def task = Future {
+      doWork(data, difficulty)
+    }
+    Await.result(Future.firstCompletedOf(Array.fill(parallelismLevel)(task)), Duration.Inf)
   }
 
   def validateWork(data: ProvedData, difficulty: BigInt): Boolean = realDifficulty(data) >= difficulty
