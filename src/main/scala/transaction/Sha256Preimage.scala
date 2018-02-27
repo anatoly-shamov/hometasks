@@ -3,7 +3,7 @@ package transaction
 import scorex.core.serialization.Serializer
 import scorex.core.transaction.box.Box
 import scorex.core.transaction.state.{Secret, SecretCompanion}
-import scorex.crypto.hash.{Digest32, Sha256}
+import scorex.crypto.hash.Sha256
 import supertagged.untag
 
 import scala.util.Try

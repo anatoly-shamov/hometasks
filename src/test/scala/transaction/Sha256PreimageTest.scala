@@ -49,5 +49,4 @@ class Sha256PreimageTest extends PropSpec
       proposition.serializer.toBytes(proposition) shouldEqual proposition.serializer.toBytes(recovered)
     }
   }
-
 }

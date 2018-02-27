@@ -17,7 +17,6 @@ case class BlockchainDevelopersTransaction(inputs: IndexedSeq[OutputId],
                                            outputs: IndexedSeq[(Sha256PreimageProposition, Value)],
                                            signatures: IndexedSeq[Sha256PreimageProof]
                                           ) extends Transaction[Sha256PreimageProposition] {
-
   override type M = BlockchainDevelopersTransaction
 
   private def seqToBytes[A](sequence: IndexedSeq[A], mapping: A => Array[Byte]): Array[Byte] =

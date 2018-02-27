@@ -1,14 +1,10 @@
 package transaction
 
-import io.circe.Json
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 import org.scalatest.prop.{GeneratorDrivenPropertyChecks, PropertyChecks}
 import org.scalatest.{Matchers, PropSpec}
 import scorex.core.ModifierId
-import scorex.core.serialization.Serializer
-import scorex.core.transaction.Transaction
 import scorex.crypto.hash.Digest32
-import scorex.crypto.signatures.MessageToSign
 import scorex.testkit.generators.CoreGenerators
 import scorex.testkit.properties.mempool.MempoolTransactionsTest
 
@@ -20,6 +16,7 @@ class BDMempoolTest extends PropSpec
   with MempoolTransactionsTest[Sha256PreimageProposition, BlockchainDevelopersTransaction, BlockchainDevelopersMempool] {
 
   override val memPool: BlockchainDevelopersMempool = new BlockchainDevelopersMempool()
+
   override val transactionGenerator: Gen[BlockchainDevelopersTransaction] = for {
     inputsGen <- Gen.nonEmptyContainerOf[Array, OutputId](
       Gen.oneOf(

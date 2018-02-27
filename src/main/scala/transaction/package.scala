@@ -1,7 +1,6 @@
 import supertagged.TaggedType
 
 package object transaction {
-
   object Digest32Preimage extends TaggedType[Array[Byte]]
 
   type Digest32Preimage = Digest32Preimage.Type
@@ -13,6 +12,4 @@ package object transaction {
   object Value extends TaggedType[Long]
 
   type Value = Value.Type
-
-
 }

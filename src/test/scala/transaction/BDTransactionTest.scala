@@ -19,7 +19,6 @@ class BDTransactionTest extends PropSpec
     )
     val buf = tx.serializer.toBytes(tx)
     val tx2 = tx.serializer.parseBytes(buf).get
-
     tx equals tx2
   }
 
