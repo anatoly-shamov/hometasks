@@ -11,25 +11,24 @@ class BDTransactionTest extends PropSpec
   with Matchers
   with CoreGenerators
 {
-  property("tx should be binary serialized and deserialised successfully") {
-    val tx = new BlockchainDevelopersTransaction(
+  property("tx should be serialized to byte array and deserialized from it") {
+    val tx = BlockchainDevelopersTransaction(
       Array[OutputId](OutputId @@ Array[Byte](0, 1, 2, 3)),
-      Array[(Sha256PreimageProposition, Value)]((Sha256PreimageProposition(Digest32 @@ Array[Byte](0, 1, 2, 3)), Value @@ 0L)),
-      Array[Sha256PreimageProof](Sha256PreimageProof(Digest32Preimage @@ Array[Byte](0, 1, 2, 3)))
+      Array[(Sha256PreimageProposition, Value)]((Sha256PreimageProposition(Digest32 @@ Array[Byte](4, 5, 6, 7)), Value @@ 42L)),
+      Array[Sha256PreimageProof](Sha256PreimageProof(Digest32Preimage @@ Array[Byte](8, 9, 0, 1)))
     )
     val buf = tx.serializer.toBytes(tx)
-    val tx2 = tx.serializer.parseBytes(buf)
+    val tx2 = tx.serializer.parseBytes(buf).get
 
-    tx shouldEqual tx2
+    tx equals tx2
   }
 
-  property("tx should be json serialized successfully") {
-    val tx = new BlockchainDevelopersTransaction(
+  property("tx should be serialized in json") {
+    val tx = BlockchainDevelopersTransaction(
       Array[OutputId](OutputId @@ Array[Byte](0, 1, 2, 3)),
-      Array[(Sha256PreimageProposition, Value)]((Sha256PreimageProposition(Digest32 @@ Array[Byte](0, 1, 2, 3)), Value @@ 0L)),
+      Array[(Sha256PreimageProposition, Value)]((Sha256PreimageProposition(Digest32 @@ Array[Byte](0, 1, 2, 3)), Value @@ 42L)),
       Array[Sha256PreimageProof](Sha256PreimageProof(Digest32Preimage @@ Array[Byte](0, 1, 2, 3)))
     )
     val json = tx.json
-    println(json.toString)
   }
 }

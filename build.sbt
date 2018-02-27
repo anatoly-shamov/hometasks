@@ -22,7 +22,8 @@ libraryDependencies ++= Seq(
   "org.scorexfoundation" %% "scorex-testkit" % scorexVersion % "test",
   "org.scalactic" %% "scalactic" % "3.0.+" % "test",
   "org.scalatest" %% "scalatest" % "3.0.+" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.+" % "test"
+  "org.scalacheck" %% "scalacheck" % "1.13.+" % "test",
+  "org.msgpack" %% "msgpack-scala" % "0.8.13"
 )
 
 

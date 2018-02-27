@@ -30,8 +30,7 @@ class BlockchainDevelopersMempool(val state: Map[ModifierId, BlockchainDeveloper
 
   override def putWithoutCheck(txs: Iterable[BlockchainDevelopersTransaction]): BlockchainDevelopersMempool = {
     if (txs.isEmpty) this
-    else new BlockchainDevelopersMempool(state + (txs.head.id -> txs.head))
-      .putWithoutCheck(txs.tail)
+    else new BlockchainDevelopersMempool(state + (txs.head.id -> txs.head)).putWithoutCheck(txs.tail)
   }
 
   override def remove(tx: BlockchainDevelopersTransaction): BlockchainDevelopersMempool =
