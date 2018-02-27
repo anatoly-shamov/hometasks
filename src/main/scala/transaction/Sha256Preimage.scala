@@ -4,6 +4,9 @@ import scorex.core.serialization.Serializer
 import scorex.core.transaction.box.Box
 import scorex.core.transaction.state.{Secret, SecretCompanion}
 import scorex.crypto.hash.{Digest32, Sha256}
+import supertagged.untag
+
+import scala.util.Try
 
 case class Sha256Preimage(preimage: Digest32Preimage) extends Secret {
   override type S = Sha256Preimage
@@ -14,7 +17,14 @@ case class Sha256Preimage(preimage: Digest32Preimage) extends Secret {
 
   override val publicImage: Sha256PreimageProposition = Sha256PreimageProposition(Sha256(preimage))
 
-  override val serializer: Serializer[Sha256Preimage] = ???
+  override val serializer: Serializer[Sha256Preimage] = Sha256PreimageSerializer
+}
+
+object Sha256PreimageSerializer extends Serializer[Sha256Preimage] {
+  override def toBytes(obj: Sha256Preimage): Array[Byte] = untag(obj.preimage)
+
+  override def parseBytes(bytes: Array[Byte]): Try[Sha256Preimage] =
+    Try(Sha256Preimage(Digest32Preimage @@ bytes))
 }
 
 object Sha256PreimageCompanion extends SecretCompanion[Sha256Preimage] {
@@ -25,10 +35,15 @@ object Sha256PreimageCompanion extends SecretCompanion[Sha256Preimage] {
     case _ => false
   }
 
-  override def sign(secret: Sha256Preimage, message: Array[Byte]): Sha256PreimageProof = ???
+  override def sign(secret: Sha256Preimage, message: Array[Byte]): Sha256PreimageProof =
+    Sha256PreimageProof(Digest32Preimage @@ untag(secret.preimage))
 
-  override def verify(message: Array[Byte], publicImage: Sha256PreimageProposition, proof: Sha256PreimageProof): Boolean = ???
+  override def verify(message: Array[Byte], publicImage: Sha256PreimageProposition, proof: Sha256PreimageProof): Boolean =
+    proof.isValid(publicImage, message)
 
-  override def generateKeys(randomSeed: Array[Byte]): (Sha256Preimage, Sha256PreimageProposition) = ???
+  override def generateKeys(randomSeed: Array[Byte]): (Sha256Preimage, Sha256PreimageProposition) = {
+    val secretKey = Sha256Preimage(Digest32Preimage @@ untag(Sha256(randomSeed)))
+    (secretKey, secretKey.publicImage)
+  }
 }
 
