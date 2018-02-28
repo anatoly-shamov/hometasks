@@ -2,8 +2,6 @@ package transaction
 
 import scorex.core.ModifierId
 import scorex.core.transaction.MemoryPool
-import scorex.crypto.hash.Blake2b256
-import supertagged._
 
 import scala.collection.immutable.HashMap
 import scala.util.Try
@@ -15,17 +13,11 @@ class BlockchainDevelopersMempool(val state: Map[ModifierId, BlockchainDeveloper
     this(HashMap.empty)
   }
 
-  case class MalformedTxException(message: String) extends Exception(message)
+  override def put(tx: BlockchainDevelopersTransaction): Try[BlockchainDevelopersMempool] = put(Seq(tx))
 
-  override def put(tx: BlockchainDevelopersTransaction): Try[BlockchainDevelopersMempool] = Try {
-    if (!(untag(tx.id) sameElements Blake2b256(tx.messageToSign)))
-      throw MalformedTxException(s"Transaction ${tx.id} is not valid")
-    new BlockchainDevelopersMempool(state + (tx.id -> tx))
-  }
-
-  override def put(txs: Iterable[BlockchainDevelopersTransaction]): Try[BlockchainDevelopersMempool] = {
-    if (txs.isEmpty) Try(this)
-    else put(txs.head).get.put(txs.tail)
+  override def put(txs: Iterable[BlockchainDevelopersTransaction]): Try[BlockchainDevelopersMempool] = Try {
+    txs.foreach(tx => require(tx.inputs.length == tx.signatures.length))
+    putWithoutCheck(txs)
   }
 
   override def putWithoutCheck(txs: Iterable[BlockchainDevelopersTransaction]): BlockchainDevelopersMempool = {
@@ -45,9 +37,9 @@ class BlockchainDevelopersMempool(val state: Map[ModifierId, BlockchainDeveloper
   override def contains(id: ModifierId): Boolean =
     state.contains(id)
 
-  override def getAll(ids: Seq[ModifierId]): Seq[BlockchainDevelopersTransaction] = for {
+  override def getAll(ids: Seq[ModifierId]): Seq[BlockchainDevelopersTransaction] = (for {
     id <- ids
-  } yield getById(id).get
+  } yield state.get(id)) flatten
 
   override def size: Int =
     state.size

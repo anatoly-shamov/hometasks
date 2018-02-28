@@ -9,7 +9,7 @@ class Sha256PreimageTest extends PropSpec
   with PropertyChecks
   with GeneratorDrivenPropertyChecks
   with Matchers
-  with CoreGenerators {
+  with Generators {
 
   property("Sha256PreimageCompanion should generate correct keys") {
     forAll(nonEmptyBytesGen) { seed =>
