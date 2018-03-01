@@ -19,164 +19,146 @@ class BDMempoolTest extends PropSpec
   val nonEmptyTransactionSequenceGenerator: Gen[Seq[BlockchainDevelopersTransaction]] =
     Gen.nonEmptyContainerOf[Seq, BlockchainDevelopersTransaction](transactionGenerator)
 
-  property("size of mempool should increase when adding a non-present tx") {
-    forAll(transactionGenerator) { tx =>
-      val mp = memPool.put(tx)
-      mp.isSuccess shouldBe true
-      mp.get.size shouldEqual 1
+  property("Size of mempool should increase when adding a non-present transaction") {
+    forAll(transactionGenerator) { tx: BlockchainDevelopersTransaction =>
+      val m: BlockchainDevelopersMempool = memPool.put(tx).get
+      m.size shouldEqual 1
     }
   }
 
-  property("size of mempool should not increase when adding a present tx") {
-    forAll(transactionGenerator) { tx =>
-      val mp = memPool.put(tx)
-      mp.isSuccess shouldBe true
-      val mp2 = mp.get.put(tx)
-      mp2.isSuccess shouldBe true
-      mp2.get.size shouldEqual 1
+  property("Size of mempool should not increase when adding a present transaction") {
+    forAll(transactionGenerator) { tx: BlockchainDevelopersTransaction =>
+      val m: BlockchainDevelopersMempool = memPool.put(tx).get
+      val m2: BlockchainDevelopersMempool = m.put(tx).get
+      m2.size shouldEqual 1
     }
   }
 
-  property("size of mempool should increase when adding a collection of non-present txs without duplicates (with check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      mp.get.size shouldEqual txs.size
+  property("Size of mempool should increase when adding a collection of non-present transactions " +
+    "without duplicates (with check)") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      m.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should increase for a number of unique non-present txs " +
+  property("Size of mempool should increase for a number of unique non-present transactions " +
     "when adding a collection of non-present txs with duplicates (with check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs ++ txs)
-      mp.isSuccess shouldBe true
-      mp.get.size shouldEqual txs.size
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs ++ txs).get
+      m.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should not increase when adding a collection of present txs (with check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val mp2 = mp.get.put(txs)
-      mp2.isSuccess shouldBe true
-      mp2.get.size shouldEqual txs.size
+  property("Size of mempool should not increase when adding a collection of present transactions (with check)") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      val m2: BlockchainDevelopersMempool = m.put(txs).get
+      m2.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should increase when adding a collection of non-present txs without duplicates (without check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.putWithoutCheck(txs)
-      mp.size shouldEqual txs.size
+  property("Size of mempool should increase when adding a collection of non-present transactions " +
+    "without duplicates (without check)") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.putWithoutCheck(txs)
+      m.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should increase for a number of unique non-present txs " +
-    "when adding a collection of non-present txs with duplicates (without check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.putWithoutCheck(txs ++ txs)
-      mp.size shouldEqual txs.size
+  property("Size of mempool should increase for a number of unique non-present transactions " +
+    "when adding a collection of non-present transactions with duplicates (without check)") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.putWithoutCheck(txs ++ txs)
+      m.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should not increase when adding a collection of present txs (without check)") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.putWithoutCheck(txs)
-      val mp2 = mp.putWithoutCheck(txs)
-      mp2.size shouldEqual txs.size
+  property("Size of mempool should not increase when adding a collection of present transactions (without check)") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.putWithoutCheck(txs)
+      val m2: BlockchainDevelopersMempool = m.putWithoutCheck(txs)
+      m2.size shouldEqual txs.size
     }
   }
 
-  property("size of mempool should decrease when removing a present tx") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val mp2 = mp.get.remove(txs.head)
-      mp2.size shouldBe txs.size - 1
+  property("Size of mempool should decrease when removing a present transaction") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      val m2: BlockchainDevelopersMempool = m.remove(txs.head)
+      m2.size shouldBe txs.size - 1
     }
   }
 
-  property("size of mempool should not decrease when removing non-present tx") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val mp2 = mp.get.remove(tx)
-      mp2.size shouldBe txs.size
+  property("Size of mempool should not decrease when removing a non-present transaction") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      val m2: BlockchainDevelopersMempool = m.remove(tx)
+      m2.size shouldBe txs.size
     }
   }
 
-  property("mempool txs should be filtered successfully") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val mp2 = mp.get.filter(tx => tx equals txs.head)
-      mp2.size shouldBe 1
+  property("Mempool transactions should be filtered successfully") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      val m2: BlockchainDevelopersMempool = m.filter(tx => tx equals txs.head)
+      m2.size shouldBe 1
     }
   }
 
-  property("existing tx should be obtained by id") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val txOpt = mp.get.getById(txs.head.id)
-      txOpt.nonEmpty shouldBe true
+  property("Present transactions should be available by id") {
+    forAll(transactionGenerator) { tx: BlockchainDevelopersTransaction =>
+      val m: BlockchainDevelopersMempool = memPool.put(tx).get
+      m.getById(tx.id).isDefined shouldBe true
     }
   }
 
-  property("non-existing tx should not be obtained by id") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      val txOpt = mp.get.getById(tx.id)
-      txOpt.nonEmpty shouldBe false
+  property("Non-present transactions should not be available by id") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      m.getById(tx.id).isDefined shouldBe false
     }
   }
 
-  property("mempool should contain present tx") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      mp.get.contains(txs.head.id) shouldBe true
+  property("Mempool should contain present transactions") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      m.contains(txs.head.id) shouldBe true
     }
   }
 
-  property("mempool should not contain non-present tx") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      mp.get.contains(tx.id) shouldBe false
+  property("Mempool should not contain non-present transactions") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      m.contains(tx.id) shouldBe false
     }
   }
 
-  property("present txs should be obtained by their ids") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-      val mp = memPool.put(txs :+ tx)
-      mp.isSuccess shouldBe true
-      mp.get.getAll(txs.map(_.id)) sameElements txs
+  property("Present transactions should be obtained by their ids") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs :+ tx).get
+      m.getAll(txs.map(_.id)) sameElements txs
     }
   }
 
-  property("non-present txs should not be obtained by their ids") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-      val mp = memPool.put(tx)
-      mp.isSuccess shouldBe true
-      mp.get.getAll(txs.map(_.id)).size shouldBe 0
+  property("Non-present transactions should not be obtained by their ids") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(tx).get
+      m.getAll(txs.map(_.id)).size shouldBe 0
     }
   }
 
-  property("required number of txs should be taken") {
-    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs, tx) =>
-        val mp = memPool.put(txs :+ tx)
-        mp.isSuccess shouldBe true
-        mp.get.take(txs.size).size shouldBe txs.size
+  property("Required number of transactions should be taken from mempool") {
+    forAll(nonEmptyTransactionSequenceGenerator, transactionGenerator) { (txs: Seq[BlockchainDevelopersTransaction], tx: BlockchainDevelopersTransaction) =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs :+ tx).get
+      m.take(txs.size).size shouldBe txs.size
     }
   }
 
-  property("maximum number of txs that can be taken should equals mempool size") {
-    forAll(nonEmptyTransactionSequenceGenerator) { txs =>
-      val mp = memPool.put(txs)
-      mp.isSuccess shouldBe true
-      mp.get.take(txs.size + 1).size shouldBe mp.get.size
+  property("Maximum number of transactions that can be taken should equals mempool size") {
+    forAll(nonEmptyTransactionSequenceGenerator) { txs: Seq[BlockchainDevelopersTransaction] =>
+      val m: BlockchainDevelopersMempool = memPool.put(txs).get
+      m.take(txs.size + 1).size shouldBe m.size
     }
   }
 }
